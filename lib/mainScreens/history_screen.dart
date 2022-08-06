@@ -8,26 +8,26 @@ import 'package:foodpanda_riders_app/widgets/simple_app_bar.dart';
 
 
 
-class ParcelInProgressScreen extends StatefulWidget
+class HistoryScreen extends StatefulWidget
 {
   @override
-  _ParcelInProgressScreenState createState() => _ParcelInProgressScreenState();
+  _HistoryScreenState createState() => _HistoryScreenState();
 }
 
 
 
-class _ParcelInProgressScreenState extends State<ParcelInProgressScreen>
+class _HistoryScreenState extends State<HistoryScreen>
 {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: SimpleAppBar(title: "Parcel In Progress",),
+        appBar: SimpleAppBar(title: "History",),
         body: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection("orders")
               .where("riderUID", isEqualTo: sharedPreferences!.getString("uid"))
-              .where("status", isEqualTo: "picking")
+              .where("status", isEqualTo: "ended")
               .snapshots(),
           builder: (c, snapshot)
           {
