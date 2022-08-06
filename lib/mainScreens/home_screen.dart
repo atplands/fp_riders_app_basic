@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:foodpanda_riders_app/assistantMethods/get_current_location.dart';
 import 'package:foodpanda_riders_app/authentication/auth_screen.dart';
 import 'package:foodpanda_riders_app/global/global.dart';
+import 'package:foodpanda_riders_app/mainScreens/earnings_screen.dart';
+import 'package:foodpanda_riders_app/mainScreens/history_screen.dart';
 import 'package:foodpanda_riders_app/mainScreens/new_orders_screen.dart';
+import 'package:foodpanda_riders_app/mainScreens/not_yet_delivered_screen.dart';
 import 'package:foodpanda_riders_app/mainScreens/parcel_in_progress_screen.dart';
 
 
@@ -64,17 +68,17 @@ class _HomeScreenState extends State<HomeScreen>
             if(index == 2)
             {
               //Not Yet Delivered
-
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> NotYetDeliveredScreen()));
             }
             if(index == 3)
             {
               //History
-
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> HistoryScreen()));
             }
             if(index == 4)
             {
               //Total Earnings
-
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> EarningsScreen()));
             }
             if(index == 5)
             {
@@ -120,8 +124,33 @@ class _HomeScreenState extends State<HomeScreen>
 
     UserLocation uLocation = UserLocation();
     uLocation.getCurrentLocation();
+    getPerParcelDeliveryAmount();
+    getRiderPreviousEarnings();
   }
 
+
+  getRiderPreviousEarnings()
+  {
+    FirebaseFirestore.instance
+        .collection("riders")
+        .doc(sharedPreferences!.getString("uid"))
+        .get().then((snap)
+    {
+      previousRiderEarnings = snap.data()!["earnings"].toString();
+    });
+  }
+  
+  getPerParcelDeliveryAmount()
+  {
+    FirebaseFirestore.instance
+        .collection("perDelivery")
+        .doc("alizeb438")
+        .get().then((snap)
+    {
+       perParcelDeliveryAmount = snap.data()!["amount"].toString();
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
