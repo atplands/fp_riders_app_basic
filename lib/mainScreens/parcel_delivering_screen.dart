@@ -5,9 +5,7 @@ import 'package:foodpanda_riders_app/global/global.dart';
 import 'package:foodpanda_riders_app/maps/map_utils.dart';
 import 'package:foodpanda_riders_app/splashScreen/splash_screen.dart';
 
-
-class ParcelDeliveringScreen extends StatefulWidget
-{
+class ParcelDeliveringScreen extends StatefulWidget {
   String? purchaserId;
   String? purchaserAddress;
   double? purchaserLat;
@@ -24,87 +22,51 @@ class ParcelDeliveringScreen extends StatefulWidget
     this.getOrderId,
   });
 
-
   @override
   _ParcelDeliveringScreenState createState() => _ParcelDeliveringScreenState();
 }
 
-
-
-
-class _ParcelDeliveringScreenState extends State<ParcelDeliveringScreen>
-{
+class _ParcelDeliveringScreenState extends State<ParcelDeliveringScreen> {
   String orderTotalAmount = "";
 
-  confirmParcelHasBeenDelivered(getOrderId, sellerId, purchaserId, purchaserAddress, purchaserLat, purchaserLng)
-  {
+  confirmParcelHasBeenDelivered(getOrderId, sellerId, purchaserId, purchaserAddress, purchaserLat, purchaserLng) {
     String riderNewTotalEarningAmount = ((double.parse(previousRiderEarnings)) + (double.parse(perParcelDeliveryAmount))).toString();
 
-    FirebaseFirestore.instance
-        .collection("orders")
-        .doc(getOrderId).update({
+    FirebaseFirestore.instance.collection("orders").doc(getOrderId).update({
       "status": "ended",
       "address": completeAddress,
       "lat": position!.latitude,
       "lng": position!.longitude,
       "earnings": perParcelDeliveryAmount, //pay per parcel delivery amount
-    }).then((value)
-    {
-      FirebaseFirestore.instance
-          .collection("riders")
-          .doc(sharedPreferences!.getString("uid"))
-          .update(
-          {
-             "earnings": riderNewTotalEarningAmount, //total earnings amount of rider
-          });
-    }).then((value)
-    {
-      FirebaseFirestore.instance
-          .collection("sellers")
-          .doc(widget.sellerId)
-          .update(
-          {
-            "earnings": (double.parse(orderTotalAmount) + (double.parse(previousEarnings))).toString(), //total earnings amount of seller
-          });
-    }).then((value)
-    {
-      FirebaseFirestore.instance
-          .collection("users")
-          .doc(purchaserId)
-          .collection("orders")
-          .doc(getOrderId).update(
-          {
-            "status": "ended",
-            "riderUID": sharedPreferences!.getString("uid"),
-          });
+    }).then((value) {
+      FirebaseFirestore.instance.collection("riders").doc(sharedPreferences!.getString("uid")).update({
+        "earnings": riderNewTotalEarningAmount, //total earnings amount of rider
+      });
+    }).then((value) {
+      FirebaseFirestore.instance.collection("sellers").doc(widget.sellerId).update({
+        "earnings": (double.parse(orderTotalAmount) + (double.parse(previousEarnings))).toString(), //total earnings amount of seller
+      });
+    }).then((value) {
+      FirebaseFirestore.instance.collection("users").doc(purchaserId).collection("orders").doc(getOrderId).update({
+        "status": "ended",
+        "riderUID": sharedPreferences!.getString("uid"),
+      });
     });
 
-    Navigator.push(context, MaterialPageRoute(builder: (c)=> const MySplashScreen()));
+    Navigator.push(context, MaterialPageRoute(builder: (c) => const MySplashScreen()));
   }
 
-  getOrderTotalAmount()
-  {
-    FirebaseFirestore.instance
-        .collection("orders")
-        .doc(widget.getOrderId)
-        .get()
-        .then((snap)
-    {
+  getOrderTotalAmount() {
+    FirebaseFirestore.instance.collection("orders").doc(widget.getOrderId).get().then((snap) {
       orderTotalAmount = snap.data()!["totalAmount"].toString();
       widget.sellerId = snap.data()!["sellerUID"].toString();
-    }).then((value)
-    {
+    }).then((value) {
       getSellerData();
     });
   }
 
-  getSellerData()
-  {
-    FirebaseFirestore.instance
-        .collection("sellers")
-        .doc(widget.sellerId)
-        .get().then((snap)
-    {
+  getSellerData() {
+    FirebaseFirestore.instance.collection("sellers").doc(widget.sellerId).get().then((snap) {
       previousEarnings = snap.data()!["earnings"].toString();
     });
   }
@@ -127,34 +89,32 @@ class _ParcelDeliveringScreenState extends State<ParcelDeliveringScreen>
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
           Image.asset(
             "images/confirm2.png",
           ),
-
-          const SizedBox(height: 5,),
-
+          const SizedBox(
+            height: 5,
+          ),
           GestureDetector(
-            onTap: ()
-            {
+            onTap: () {
               //show location from rider current location towards seller location
               MapUtils.lauchMapFromSourceToDestination(position!.latitude, position!.longitude, widget.purchaserLat, widget.purchaserLng);
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 Image.asset(
                   'images/restaurant.png',
                   width: 50,
                 ),
-
-                const SizedBox(width: 7,),
-
+                const SizedBox(
+                  width: 7,
+                ),
                 Column(
                   children: const [
-                    SizedBox(height: 12,),
-
+                    SizedBox(
+                      height: 12,
+                    ),
                     Text(
                       "Show Delivery Drop-off Location",
                       style: TextStyle(
@@ -165,46 +125,39 @@ class _ParcelDeliveringScreenState extends State<ParcelDeliveringScreen>
                     ),
                   ],
                 ),
-
               ],
             ),
           ),
-
-          const SizedBox(height: 40,),
-
+          const SizedBox(
+            height: 40,
+          ),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Center(
               child: InkWell(
-                onTap: ()
-                {
+                onTap: () {
                   //rider location update
                   UserLocation uLocation = UserLocation();
                   uLocation.getCurrentLocation();
 
                   //confirmed - that rider has picked parcel from seller
-                  confirmParcelHasBeenDelivered(
-                      widget.getOrderId,
-                      widget.sellerId,
-                      widget.purchaserId,
-                      widget.purchaserAddress,
-                      widget.purchaserLat,
-                      widget.purchaserLng
-                  );
+                  confirmParcelHasBeenDelivered(widget.getOrderId, widget.sellerId, widget.purchaserId, widget.purchaserAddress, widget.purchaserLat, widget.purchaserLng);
                 },
                 child: Container(
                   decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.cyan,
-                          Colors.amber,
-                        ],
-                        begin:  FractionalOffset(0.0, 0.0),
-                        end:  FractionalOffset(1.0, 0.0),
-                        stops: [0.0, 1.0],
-                        tileMode: TileMode.clamp,
-                      )
-                  ),
+                    colors: [
+                      Colors.cyan,
+                      Colors.amber,
+                    ],
+                    begin: FractionalOffset(0.0, 0.0),
+                    end: FractionalOffset(1.0, 0.0),
+                    stops: [
+                      0.0,
+                      1.0
+                    ],
+                    tileMode: TileMode.clamp,
+                  )),
                   width: MediaQuery.of(context).size.width - 90,
                   height: 50,
                   child: const Center(
@@ -217,7 +170,6 @@ class _ParcelDeliveringScreenState extends State<ParcelDeliveringScreen>
               ),
             ),
           ),
-
         ],
       ),
     );
